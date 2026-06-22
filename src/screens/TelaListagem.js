@@ -50,6 +50,7 @@ export default function TelaListagem({ navigation }) {
     });
   }, [registros, mesSelecionado]);
 
+  // AJUSTADO MANUALMENTE
   function mudarMes(delta) {
     setMesSelecionado((atual) => {
       const totalDeMeses = atual.ano * 12 + atual.mes + delta;

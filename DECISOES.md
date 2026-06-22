@@ -52,10 +52,36 @@
 
 ## Trecho que eu escrevi sem ajuda de IA (aponte 1 função/método)
 
-> _(Espaço reservado: ao testar o app e fazer ajustes manuais no código,
-> marque o trecho com o comentário `// AJUSTADO MANUALMENTE` e cole aqui a
-> função correspondente, explicando o que ela faz. O professor vai perguntar
-> sobre isso na defesa oral.)_
+A função abaixo está em `src/screens/TelaListagem.js` e controla a troca de
+mês no seletor que fica acima do gráfico de barras. Eu reescrevi essa parte
+do código manualmente (substituindo duas funções quase idênticas que a IA
+tinha gerado, `irParaMesAnterior` e `irParaProximoMes`, por uma única função
+parametrizada):
+
+```js
+function mudarMes(delta) {
+  setMesSelecionado((atual) => {
+    const totalDeMeses = atual.ano * 12 + atual.mes + delta;
+    const novoAno = Math.floor(totalDeMeses / 12);
+    const novoMes = totalDeMeses % 12;
+    return { ano: novoAno, mes: novoMes };
+  });
+}
+```
+
+**O que ela faz:** em vez de verificar "é dezembro?" ou "é janeiro?" com
+condicionais (como a versão original fazia, repetindo a mesma checagem duas
+vezes), eu transformo o mês e o ano selecionados em um único número contínuo
+de meses (`ano * 12 + mes`). Somo ou subtraio `delta` (1 para avançar, -1
+para voltar) nesse número, e depois "decomponho" o resultado de volta em mês
+e ano usando divisão inteira (`Math.floor`, para o ano) e resto da divisão
+(`%`, para o mês — sempre um valor entre 0 e 11). Isso faz a virada de ano
+acontecer automaticamente, sem precisar tratar dezembro→janeiro e
+janeiro→dezembro como casos especiais.
+
+Os dois botões de seta da tela agora chamam a mesma função, só trocando o
+sinal do parâmetro: `mudarMes(-1)` para o mês anterior e `mudarMes(1)` para
+o próximo.
 
 ## Partes feitas com auxílio de IA vs. feitas manualmente
 
