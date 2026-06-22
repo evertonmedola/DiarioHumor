@@ -50,18 +50,11 @@ export default function TelaListagem({ navigation }) {
     });
   }, [registros, mesSelecionado]);
 
-  function irParaMesAnterior() {
+  function mudarMes(delta) {
     setMesSelecionado((atual) => {
-      const novoMes = atual.mes === 0 ? 11 : atual.mes - 1;
-      const novoAno = atual.mes === 0 ? atual.ano - 1 : atual.ano;
-      return { ano: novoAno, mes: novoMes };
-    });
-  }
-
-  function irParaProximoMes() {
-    setMesSelecionado((atual) => {
-      const novoMes = atual.mes === 11 ? 0 : atual.mes + 1;
-      const novoAno = atual.mes === 11 ? atual.ano + 1 : atual.ano;
+      const totalDeMeses = atual.ano * 12 + atual.mes + delta;
+      const novoAno = Math.floor(totalDeMeses / 12);
+      const novoMes = totalDeMeses % 12;
       return { ano: novoAno, mes: novoMes };
     });
   }
@@ -81,13 +74,13 @@ export default function TelaListagem({ navigation }) {
       </View>
 
       <View style={styles.seletorMes}>
-        <TouchableOpacity onPress={irParaMesAnterior}>
+        <TouchableOpacity onPress={() => mudarMes(-1)}>
           <Text style={styles.seta}>{'‹'}</Text>
         </TouchableOpacity>
         <Text style={styles.textoMes}>
           {nomeMes} {mesSelecionado.ano}
         </Text>
-        <TouchableOpacity onPress={irParaProximoMes}>
+        <TouchableOpacity onPress={() => mudarMes(1)}>
           <Text style={styles.seta}>{'›'}</Text>
         </TouchableOpacity>
       </View>
