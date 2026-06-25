@@ -25,7 +25,9 @@
 
 - **3 telas**, usando `@react-navigation/native-stack` (Stack Navigator
   tradicional, sem Expo Router):
-  - **Listagem** (tela inicial): mostra o gráfico do mês + lista de registros.
+  - **Listagem** (tela inicial): mostra um calendário mensal (cada dia exibe
+    o emoji do humor registrado, se houver), o registro do dia selecionado e
+    um gráfico de barras resumindo os humores do mês.
   - **Formulário**: usada tanto para criar quanto para editar. O modo é
     decidido pela presença do parâmetro `registroId` — se existir, a tela
     busca o registro e preenche os campos; se não existir, começa em branco.
@@ -109,3 +111,14 @@ o próximo.
      conflitos de dependências (`ERESOLVE`) no `npm install`. Resolvi limpando
      `node_modules` e `package-lock.json`, e usando `npx expo install --fix`
      para obter as versões corretas e compatíveis entre si.
+  5. Era possível salvar mais de um registro na mesma data, e a tela só
+     mostrava um deles (o primeiro encontrado), escondendo os demais sem
+     aviso. Corrigido impedindo a duplicidade na origem: `salvarRegistro` e
+     `atualizarRegistro` (em `registrosStorage.js`) agora verificam se já
+     existe um registro para aquela data antes de salvar, e a tela de
+     formulário exibe a mensagem "Já existe um registro nesse dia. Escolha
+     outra data." caso o usuário tente.
+  6. No calendário mensal, quando um dia tinha um registro, a célula mostrava
+     só o emoji do humor e escondia o número do dia, dificultando saber qual
+     dia era qual. Ajustado para mostrar os dois juntos (número do dia em
+     cima, emoji pequeno abaixo).
