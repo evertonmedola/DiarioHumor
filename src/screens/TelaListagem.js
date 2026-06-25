@@ -53,6 +53,7 @@ export default function TelaListagem({ navigation }) {
     return registros.find((r) => r.data === diaSelecionado) || null;
   }, [registros, diaSelecionado]);
 
+  // ESCRITO MANUALMENTE
   function mudarMes(delta) {
     setMesSelecionado((atual) => {
       const totalDeMeses = atual.ano * 12 + atual.mes + delta;
