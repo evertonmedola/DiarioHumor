@@ -23,7 +23,12 @@ export default function TelaFormulario({ navigation, route }) {
   const registroId = route.params?.registroId;
   const modoEdicao = !!registroId;
 
-  const [data, setData] = useState(new Date());
+  // Se veio de um dia vazio do calendário, dataInicial pré-preenche o campo
+  const dataInicial = route.params?.dataInicial;
+
+  const [data, setData] = useState(() =>
+    dataInicial ? new Date(dataInicial + 'T00:00:00') : new Date()
+  );
   const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
   const [humor, setHumor] = useState(null);
   const [nota, setNota] = useState('');
@@ -74,9 +79,23 @@ export default function TelaFormulario({ navigation, route }) {
     const payload = { data: dataIso, humor, nota };
 
     if (modoEdicao) {
-      await atualizarRegistro(registroId, payload);
+      const sucesso = await atualizarRegistro(registroId, payload);
+      if (!sucesso) {
+        setErros((e) => ({
+          ...e,
+          data: 'Já existe um registro nesse dia. Escolha outra data.',
+        }));
+        return;
+      }
     } else {
-      await salvarRegistro(payload);
+      const novoRegistro = await salvarRegistro(payload);
+      if (!novoRegistro) {
+        setErros((e) => ({
+          ...e,
+          data: 'Já existe um registro nesse dia. Escolha outra data ou edite o registro existente.',
+        }));
+        return;
+      }
     }
 
     navigation.goBack();

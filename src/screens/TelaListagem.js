@@ -2,35 +2,35 @@ import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import CardHumor from '../components/CardHumor';
+import CalendarioMensal from '../components/CalendarioMensal';
+import CardDoDiaSelecionado from '../components/CardDoDiaSelecionado';
 import GraficoMensal from '../components/GraficoMensal';
 import { getRegistros } from '../services/registrosStorage';
 
 export default function TelaListagem({ navigation }) {
   const [registros, setRegistros] = useState([]);
-  // mesSelecionado guarda { ano, mes } — mes de 0 a 11, igual ao Date do JS
+
   const [mesSelecionado, setMesSelecionado] = useState(() => {
     const hoje = new Date();
     return { ano: hoje.getFullYear(), mes: hoje.getMonth() };
   });
 
-  // Recarrega a lista sempre que a tela recebe foco (ex: ao voltar do Formulário)
+  const [diaSelecionado, setDiaSelecionado] = useState(() =>
+    formatarParaIso(new Date())
+  );
+
   useFocusEffect(
     useCallback(() => {
       let ativo = true;
       async function carregar() {
         const dados = await getRegistros();
-        if (ativo) {
-          // Ordena do mais recente para o mais antigo
-          dados.sort((a, b) => b.data.localeCompare(a.data));
-          setRegistros(dados);
-        }
+        if (ativo) setRegistros(dados);
       }
       carregar();
       return () => {
@@ -39,7 +39,6 @@ export default function TelaListagem({ navigation }) {
     }, [])
   );
 
-  // Estado derivado: registros pertencentes ao mês/ano selecionado
   const registrosDoMes = useMemo(() => {
     return registros.filter((r) => {
       const [ano, mes] = r.data.split('-');
@@ -50,7 +49,10 @@ export default function TelaListagem({ navigation }) {
     });
   }, [registros, mesSelecionado]);
 
-  // AJUSTADO MANUALMENTE
+  const registroDoDiaSelecionado = useMemo(() => {
+    return registros.find((r) => r.data === diaSelecionado) || null;
+  }, [registros, diaSelecionado]);
+
   function mudarMes(delta) {
     setMesSelecionado((atual) => {
       const totalDeMeses = atual.ano * 12 + atual.mes + delta;
@@ -58,6 +60,16 @@ export default function TelaListagem({ navigation }) {
       const novoMes = totalDeMeses % 12;
       return { ano: novoAno, mes: novoMes };
     });
+  }
+
+  function handleTocarDia() {
+    if (registroDoDiaSelecionado) {
+      navigation.navigate('Detalhes', {
+        registroId: registroDoDiaSelecionado.id,
+      });
+    } else {
+      navigation.navigate('Formulario', { dataInicial: diaSelecionado });
+    }
   }
 
   const nomeMes = NOMES_MESES[mesSelecionado.mes];
@@ -74,55 +86,50 @@ export default function TelaListagem({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.seletorMes}>
-        <TouchableOpacity onPress={() => mudarMes(-1)}>
-          <Text style={styles.seta}>{'‹'}</Text>
-        </TouchableOpacity>
-        <Text style={styles.textoMes}>
-          {nomeMes} {mesSelecionado.ano}
-        </Text>
-        <TouchableOpacity onPress={() => mudarMes(1)}>
-          <Text style={styles.seta}>{'›'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <GraficoMensal registrosDoMes={registrosDoMes} />
-
-      <FlatList
-        data={registros}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.lista}
-        ListEmptyComponent={
-          <Text style={styles.listaVazia}>
-            Nenhum registro ainda. Toque em "+" para começar.
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.seletorMes}>
+          <TouchableOpacity onPress={() => mudarMes(-1)}>
+            <Text style={styles.seta}>{'‹'}</Text>
+          </TouchableOpacity>
+          <Text style={styles.textoMes}>
+            {nomeMes} {mesSelecionado.ano}
           </Text>
-        }
-        renderItem={({ item }) => (
-          <CardHumor
-            registro={item}
-            onPress={() =>
-              navigation.navigate('Detalhes', { registroId: item.id })
-            }
-          />
-        )}
-      />
+          <TouchableOpacity onPress={() => mudarMes(1)}>
+            <Text style={styles.seta}>{'›'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <CalendarioMensal
+          ano={mesSelecionado.ano}
+          mes={mesSelecionado.mes}
+          registrosDoMes={registrosDoMes}
+          diaSelecionado={diaSelecionado}
+          onSelecionarDia={setDiaSelecionado}
+        />
+
+        <CardDoDiaSelecionado
+          dataIso={diaSelecionado}
+          registro={registroDoDiaSelecionado}
+          onPress={handleTocarDia}
+        />
+
+        <Text style={styles.tituloSecao}>Resumo do mês</Text>
+        <GraficoMensal registrosDoMes={registrosDoMes} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
+function formatarParaIso(date) {
+  const ano = date.getFullYear();
+  const mes = String(date.getMonth() + 1).padStart(2, '0');
+  const dia = String(date.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
 const NOMES_MESES = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ];
 
 const styles = StyleSheet.create({
@@ -155,12 +162,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 20,
   },
+  scroll: {
+    paddingBottom: 32,
+  },
   seletorMes: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   seta: {
     fontSize: 22,
@@ -171,15 +181,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#555555',
   },
-  lista: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 24,
-  },
-  listaVazia: {
-    textAlign: 'center',
-    color: '#999999',
-    marginTop: 40,
+  tituloSecao: {
     fontSize: 13,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginTop: 20,
+    marginHorizontal: 16,
+    marginBottom: 4,
   },
 });

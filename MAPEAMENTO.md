@@ -11,14 +11,16 @@ App (Navigation Container)
 ├── TelaListagem (tela inicial)
 │   ├── TopBar
 │   │   └── Título "Diário de Humor" + botão "+" (ir para Formulário)
-│   ├── GraficoMensal (reutilizável* / mas usado só aqui por enquanto)
-│   │   └── BarChart (react-native-chart-kit)
-│   ├── SeletorMes (opcional, navega entre meses do gráfico)
-│   └── ListaRegistros (FlatList)
-│       └── CardHumor (reutilizável)
-│           ├── IconeHumor (emoji conforme humor)
-│           ├── DataFormatada
-│           └── PreviewNota (texto truncado, se houver)
+│   ├── SeletorMes (navega entre meses, controla calendário e gráfico)
+│   ├── CalendarioMensal
+│   │   ├── CabecalhoDiasDaSemana (D S T Q Q S S)
+│   │   └── DiaCalendario (reutilizável, um por célula do grid)
+│   │       └── IconeHumor (emoji pequeno, se houver registro naquele dia)
+│   ├── GraficoMensal (compacto, abaixo do calendário)
+│   └── CardDoDiaSelecionado (mostra o registro do dia tocado no calendário)
+│       ├── IconeHumor
+│       ├── DataFormatada
+│       └── NotaPreview
 │
 ├── TelaFormulario (criar/editar registro)
 │   ├── TopBar (título dinâmico: "Novo registro" / "Editar registro")
@@ -40,24 +42,26 @@ App (Navigation Container)
 
 ## Componentes reutilizáveis (usados em 2+ lugares)
 
-| Componente     | Onde é usado                          | Responsabilidade                                                      |
-| -------------- | ------------------------------------- | --------------------------------------------------------------------- |
-| `IconeHumor`   | CardHumor, SeletorHumor, TelaDetalhes | Renderiza o emoji/ícone correspondente ao humor selecionado           |
-| `CardHumor`    | ListaRegistros (TelaListagem)         | Exibe resumo de um registro na lista (data + ícone + preview da nota) |
-| `BotaoSalvar`  | TelaFormulario                        | Botão de ação primária, com estado de loading/disabled                |
-| `BotaoExcluir` | TelaFormulario, TelaDetalhes          | Botão de exclusão com confirmação (Alert)                             |
-| `TopBar`       | Todas as telas                        | Cabeçalho com título e botão de navegação (voltar ou adicionar)       |
+| Componente     | Onde é usado                                                    | Responsabilidade                                                |
+| -------------- | --------------------------------------------------------------- | --------------------------------------------------------------- |
+| `IconeHumor`   | DiaCalendario, CardDoDiaSelecionado, SeletorHumor, TelaDetalhes | Renderiza o emoji/ícone correspondente ao humor selecionado     |
+| `BotaoSalvar`  | TelaFormulario                                                  | Botão de ação primária, com estado de loading/disabled          |
+| `BotaoExcluir` | TelaFormulario, TelaDetalhes                                    | Botão de exclusão com confirmação (modal próprio)               |
+| `TopBar`       | Todas as telas                                                  | Cabeçalho com título e botão de navegação (voltar ou adicionar) |
 
 ## Componentes específicos de tela (não reutilizados)
 
-| Componente      | Tela           | Responsabilidade                                                  |
-| --------------- | -------------- | ----------------------------------------------------------------- |
-| `GraficoMensal` | TelaListagem   | Renderiza o BarChart com a contagem de humores do mês selecionado |
-| `SeletorMes`    | TelaListagem   | Permite navegar entre meses para atualizar o `GraficoMensal`      |
-| `SeletorHumor`  | TelaFormulario | Grade/linha de opções de humor para o usuário escolher            |
-| `CampoData`     | TelaFormulario | DatePicker para selecionar a data do registro                     |
-| `CampoNota`     | TelaFormulario | TextInput multiline para a nota opcional                          |
-| `NotaCompleta`  | TelaDetalhes   | Exibe o texto completo da nota (sem truncamento)                  |
+| Componente             | Tela           | Responsabilidade                                                              |
+| ---------------------- | -------------- | ----------------------------------------------------------------------------- |
+| `CalendarioMensal`     | TelaListagem   | Renderiza o grid de dias do mês, com o humor de cada dia (se houver)          |
+| `DiaCalendario`        | TelaListagem   | Uma célula do grid: número do dia + IconeHumor pequeno; toque seleciona o dia |
+| `GraficoMensal`        | TelaListagem   | Gráfico de barras compacto com a contagem de humores do mês selecionado       |
+| `SeletorMes`           | TelaListagem   | Permite navegar entre meses, atualizando calendário e gráfico juntos          |
+| `CardDoDiaSelecionado` | TelaListagem   | Mostra o registro (se houver) do dia tocado no calendário                     |
+| `SeletorHumor`         | TelaFormulario | Grade/linha de opções de humor para o usuário escolher                        |
+| `CampoData`            | TelaFormulario | DatePicker para selecionar a data do registro                                 |
+| `CampoNota`            | TelaFormulario | TextInput multiline para a nota opcional                                      |
+| `NotaCompleta`         | TelaDetalhes   | Exibe o texto completo da nota (sem truncamento)                              |
 
 ## Definição dos humores (constante compartilhada)
 

@@ -8,7 +8,7 @@ import { HUMORES } from '../constants/humores';
 // funciona de forma idêntica em Web, iOS e Android, e é mais fácil de
 // explicar na defesa oral, já que cada peça do gráfico é só uma View
 // com altura calculada em porcentagem.
-const ALTURA_MAXIMA_BARRA = 90; // em pixels
+const ALTURA_MAXIMA_BARRA = 56; // em pixels (compacto, para conviver com o calendário na mesma tela)
 
 export default function GraficoMensal({ registrosDoMes }) {
   const contagens = useMemo(() => {

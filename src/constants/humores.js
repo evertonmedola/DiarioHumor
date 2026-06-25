@@ -1,4 +1,4 @@
-// Lista única de humores, usada em SeletorHumor, CardHumor e GraficoMensal.
+// Lista única de humores, usada em SeletorHumor, CalendarioMensal e GraficoMensal.
 // Mantendo isso centralizado evitamos duplicar a lista em 3 lugares diferentes.
 
 export const HUMORES = [

@@ -23,8 +23,23 @@ async function salvarTodos(registros) {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(registros));
 }
 
-// CREATE: recebe { data, humor, nota } e adiciona um novo registro com id e timestamp
+// READ: verifica se já existe algum registro numa determinada data
+// Usado para impedir 2 registros no mesmo dia (1 registro = 1 dia).
+export async function existeRegistroNaData(data, idParaIgnorar = null) {
+  const registros = await getRegistros();
+  return registros.some(
+    (registro) => registro.data === data && registro.id !== idParaIgnorar
+  );
+}
+
+// CREATE: recebe { data, humor, nota } e adiciona um novo registro com id e timestamp.
+// Retorna null se já existir um registro nessa data (1 registro por dia).
 export async function salvarRegistro({ data, humor, nota }) {
+  const jaExiste = await existeRegistroNaData(data);
+  if (jaExiste) {
+    return null;
+  }
+
   const registros = await getRegistros();
 
   const novoRegistro = {
@@ -40,8 +55,14 @@ export async function salvarRegistro({ data, humor, nota }) {
   return novoRegistro;
 }
 
-// UPDATE: encontra pelo id e substitui os campos editáveis
+// UPDATE: encontra pelo id e substitui os campos editáveis.
+// Retorna false se a nova data já estiver em uso por OUTRO registro.
 export async function atualizarRegistro(id, { data, humor, nota }) {
+  const jaExiste = await existeRegistroNaData(data, id);
+  if (jaExiste) {
+    return false;
+  }
+
   const registros = await getRegistros();
 
   const atualizados = registros.map((registro) =>
@@ -51,6 +72,7 @@ export async function atualizarRegistro(id, { data, humor, nota }) {
   );
 
   await salvarTodos(atualizados);
+  return true;
 }
 
 // DELETE: filtra removendo o registro pelo id
